@@ -5,6 +5,7 @@ module Shoulda # :nodoc:
       #
       # Options:
       # * <tt>with_message</tt> - value the test expects to find in
+      # * <tt>only_integer</tt> - allows only integer values
       #   <tt>errors.on(:attribute)</tt>. Regexp or string.  Defaults to the
       #   translation for <tt>:not_a_number</tt>.
       # * <tt>with_greater_than_message</tt> - value the test expects to find in
@@ -36,7 +37,7 @@ module Shoulda # :nodoc:
       #   it { should validate_numericality_of(:age).less_than_or_equal_to(300).with_less_than_or_equal_to_message('custom message') }
       #   it { should validate_numericality_of(:age).equal_to(25) }
       #   it { should validate_numericality_of(:age).equal_to(25).with_equal_to_message('custom message') }
-      #
+      #   it { should validate_numericality_of(:age).only_integer }
       def validate_numericality_of(attr)
         ValidateNumericalityOfMatcher.new(attr)
       end
@@ -96,6 +97,10 @@ module Shoulda # :nodoc:
 
         def with_equal_to_message(message)
           @equal_to_message = message if message
+        end
+
+        def only_integer
+          @only_integer = true
           self
         end
 
@@ -126,6 +131,14 @@ module Shoulda # :nodoc:
             "#{method} #{instance_variable_get("@#{method}")}" if instance_variable_get("@#{method}")
           end
           ["allow numeric values", result.compact.join(', '), "for", @attribute].join(" ")
+          disallows_double_if_only_integer &&
+            disallows_text
+        end
+
+        def description
+          type = if @only_integer then "integer" else "numeric" end
+          description = "only allow #{type} values for #{@attribute}"
+          description
         end
 
         private
@@ -176,8 +189,18 @@ module Shoulda # :nodoc:
         end
 
 
-        def expected_message
-          @expected_message || :not_a_number
+        def disallows_double_if_only_integer
+          if @only_integer
+            message = @expected_message || :not_an_integer
+            disallows_value_of(0.1, message) && disallows_value_of('0.1', message)
+          else
+            true
+          end
+        end
+
+        def disallows_text
+          message = @expected_message || :not_a_number
+          disallows_value_of('abcd', message)
         end
       end
     end
