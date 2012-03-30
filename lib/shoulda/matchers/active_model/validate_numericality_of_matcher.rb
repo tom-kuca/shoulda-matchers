@@ -1,7 +1,6 @@
 module Shoulda # :nodoc:
   module Matchers
     module ActiveModel # :nodoc:
-
       # Ensure that the attribute is numeric
       #
       # Options:
@@ -101,7 +100,9 @@ module Shoulda # :nodoc:
         end
 
         def with_message(message)
-          @expected_message = message if message
+          if message
+            @expected_message = message
+          end
           self
         end
 
@@ -117,6 +118,7 @@ module Shoulda # :nodoc:
             disallows_less_than_or_equal_to_value &&
             disallows_equal_to_value &&
             disallows_text_value
+          disallows_value_of('abcd', expected_message)
         end
 
         def description
@@ -127,52 +129,56 @@ module Shoulda # :nodoc:
         end
 
         private
-          def disallows_greater_than_value
-            @greater_than.nil? ? true : disallows_value_of(@greater_than, @greater_than_message)
+        def disallows_greater_than_value
+          @greater_than.nil? ? true : disallows_value_of(@greater_than, @greater_than_message)
+        end
+
+        def disallows_less_than_value
+          @less_than.nil? ? true : disallows_value_of(@less_than, @less_than_message)
+        end
+
+        def disallows_greater_than_or_equal_to_value
+          @greater_than_or_equal_to.nil? ? true : disallows_value_of(@greater_than_or_equal_to-1, @greater_than_or_equal_to_message)
+        end
+
+        def disallows_less_than_or_equal_to_value
+          @less_than_or_equal_to.nil? ? true : disallows_value_of(@less_than_or_equal_to+1, @less_than_or_equal_to_message)
+        end
+
+        def disallows_equal_to_value
+          @equal_to.nil? ? true : disallows_value_of(@equal_to+1, @equal_to_message)
+        end
+
+        def disallows_text_value
+          disallows_value_of('abcd', @expected_message)
+        end
+
+        def translate_messages!
+          if Symbol === @greater_than_message
+            @greater_than_message = default_error_message(@greater_than_message, :count => @greater_than)
           end
 
-          def disallows_less_than_value
-            @less_than.nil? ? true : disallows_value_of(@less_than, @less_than_message)
+          if Symbol === @less_than_message
+            @less_than_message = default_error_message(@less_than_message, :count => @less_than)
           end
 
-          def disallows_greater_than_or_equal_to_value
-            @greater_than_or_equal_to.nil? ? true : disallows_value_of(@greater_than_or_equal_to-1, @greater_than_or_equal_to_message)
+          if Symbol === @greater_than_or_equal_to_message
+            @greater_than_or_equal_to_message = default_error_message(@greater_than_or_equal_to_message, :count => @greater_than_or_equal_to)
           end
 
-          def disallows_less_than_or_equal_to_value
-            @less_than_or_equal_to.nil? ? true : disallows_value_of(@less_than_or_equal_to+1, @less_than_or_equal_to_message)
+          if Symbol === @less_than_or_equal_to_message
+            @less_than_or_equal_to_message = default_error_message(@less_than_or_equal_to_message, :count => @less_than_or_equal_to)
           end
 
-          def disallows_equal_to_value
-            @equal_to.nil? ? true : disallows_value_of(@equal_to+1, @equal_to_message)
+          if Symbol === @equal_to_message
+            @equal_to_message = default_error_message(@equal_to_message, :count => @equal_to)
           end
+        end
 
-          def disallows_text_value
-            disallows_value_of('abcd', @expected_message)
-          end
 
-          def translate_messages!
-            if Symbol === @greater_than_message
-              @greater_than_message = default_error_message(@greater_than_message, :count => @greater_than)
-            end
-
-            if Symbol === @less_than_message
-              @less_than_message = default_error_message(@less_than_message, :count => @less_than)
-            end
-
-            if Symbol === @greater_than_or_equal_to_message
-              @greater_than_or_equal_to_message = default_error_message(@greater_than_or_equal_to_message, :count => @greater_than_or_equal_to)
-            end
-
-            if Symbol === @less_than_or_equal_to_message
-              @less_than_or_equal_to_message = default_error_message(@less_than_or_equal_to_message, :count => @less_than_or_equal_to)
-            end
-
-            if Symbol === @equal_to_message
-              @equal_to_message = default_error_message(@equal_to_message, :count => @equal_to)
-            end
-          end
-
+        def expected_message
+          @expected_message || :not_a_number
+        end
       end
     end
   end
