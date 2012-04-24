@@ -45,6 +45,11 @@ module Shoulda # :nodoc:
       class ValidateNumericalityOfMatcher < ValidationMatcher # :nodoc:
         include Helpers
 
+        def initialize(attribute)
+          super(attribute)
+          @options = {}
+        end
+
         def greater_than(number)
           @greater_than = number if number
           @greater_than_message = :greater_than unless @greater_than_message
@@ -97,10 +102,11 @@ module Shoulda # :nodoc:
 
         def with_equal_to_message(message)
           @equal_to_message = message if message
+          self
         end
 
         def only_integer
-          @only_integer = true
+          @options[:only_integer] = true
           self
         end
 
@@ -189,7 +195,7 @@ module Shoulda # :nodoc:
 
 
         def allowed_type
-          if @only_integer
+          if @options[:only_integer]
             "integer"
           else
             "numeric"
@@ -197,9 +203,9 @@ module Shoulda # :nodoc:
         end
 
         def disallows_non_integers?
-          if @only_integer
+          if @options[:only_integer]
             message = @expected_message || :not_an_integer
-            disallows_value_of(0.1, message) && disallows_value_of('0.1', message)
+            disallows_value_of(0.1, message)
           else
             true
           end
