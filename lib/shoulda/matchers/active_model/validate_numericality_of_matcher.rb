@@ -51,57 +51,52 @@ module Shoulda # :nodoc:
         end
 
         def greater_than(number)
-          @greater_than = number if number
-          @greater_than_message = :greater_than unless @greater_than_message
+          @options[:greater_than] = number
           self
         end
 
         def with_greater_than_message(message)
-          @greater_than_message = message if message
+          @greater_than_message = message
           self
         end
 
         def less_than(number)
-          @less_than = number if number
-          @less_than_message = :less_than unless @less_than_message
+          @options[:less_than] = number
           self
         end
 
         def with_less_than_message(message)
-          @less_than_message = message if message
+          @less_than_message = message
           self
         end
 
         def greater_than_or_equal_to(number)
-          @greater_than_or_equal_to = number if number
-          @greater_than_or_equal_to_message = :greater_than_or_equal_to unless @greater_than_or_equal_to_message
+          @options[:greater_than_or_equal_to] = number
           self
         end
 
         def with_greater_than_or_equal_to_message(message)
-          @greater_than_or_equal_to_message = message if message
+          @greater_than_or_equal_to_message = message
           self
         end
 
         def less_than_or_equal_to(number)
-          @less_than_or_equal_to = number if number
-          @less_than_or_equal_to_message = :less_than_or_equal_to unless @less_than_or_equal_to_message
+          @options[:less_than_or_equal_to] = number
           self
         end
 
         def with_less_than_or_equal_to_message(message)
-          @less_than_or_equal_to_message = message if message
+          @less_than_or_equal_to_message = message
           self
         end
 
         def equal_to(number)
-          @equal_to = number if number
-          @equal_to_message = :equal_to unless @equal_to_message
+          @options[:equal_to] = number
           self
         end
 
         def with_equal_to_message(message)
-          @equal_to_message = message if message
+          @equal_to_message = message
           self
         end
 
@@ -111,16 +106,13 @@ module Shoulda # :nodoc:
         end
 
         def with_message(message)
-          if message
-            @expected_message = message
-          end
+          @expected_message = message
           self
         end
 
         def matches?(subject)
           super(subject)
 
-          @expected_message ||= :not_a_number
           translate_messages!
 
           disallows_greater_than_value &&
@@ -147,52 +139,42 @@ module Shoulda # :nodoc:
         end
 
         private
+
         def disallows_greater_than_value
-          @greater_than.nil? ? true : disallows_value_of(@greater_than, @greater_than_message)
+          if @options.key? :keygreater_than
+            true
+          else
+            disallows_value_of(@options[:greater_than], greater_than_message)
+          end
         end
 
         def disallows_less_than_value
-          @less_than.nil? ? true : disallows_value_of(@less_than, @less_than_message)
+          if @options.key? :less_than 
+           true
+          else
+            disallows_value_of(@options[:less_than], less_than_message)
+          end
         end
 
         def disallows_greater_than_or_equal_to_value
-          @greater_than_or_equal_to.nil? ? true : disallows_value_of(@greater_than_or_equal_to-1, @greater_than_or_equal_to_message)
+          if @options.key? :greater_than_or_equal_to
+            true
+          else
+            disallows_value_of(options[:greater_than_or_equal_to]-1, greater_than_or_equal_to_message)
+          end
         end
 
         def disallows_less_than_or_equal_to_value
-          @less_than_or_equal_to.nil? ? true : disallows_value_of(@less_than_or_equal_to+1, @less_than_or_equal_to_message)
+          @less_than_or_equal_to.nil? ? true : disallows_value_of(@less_than_or_equal_to+1, less_than_or_equal_to_message)
         end
 
         def disallows_equal_to_value
-          @equal_to.nil? ? true : disallows_value_of(@equal_to+1, @equal_to_message)
+          @equal_to.nil? ? true : disallows_value_of(@equal_to+1, equal_to_message)
         end
 
         def disallows_text_value
           disallows_value_of('abcd', @expected_message)
         end
-
-        def translate_messages!
-          if Symbol === @greater_than_message
-            @greater_than_message = default_error_message(@greater_than_message, :count => @greater_than)
-          end
-
-          if Symbol === @less_than_message
-            @less_than_message = default_error_message(@less_than_message, :count => @less_than)
-          end
-
-          if Symbol === @greater_than_or_equal_to_message
-            @greater_than_or_equal_to_message = default_error_message(@greater_than_or_equal_to_message, :count => @greater_than_or_equal_to)
-          end
-
-          if Symbol === @less_than_or_equal_to_message
-            @less_than_or_equal_to_message = default_error_message(@less_than_or_equal_to_message, :count => @less_than_or_equal_to)
-          end
-
-          if Symbol === @equal_to_message
-            @equal_to_message = default_error_message(@equal_to_message, :count => @equal_to)
-          end
-        end
-
 
         def allowed_type
           if @options[:only_integer]
@@ -214,6 +196,36 @@ module Shoulda # :nodoc:
         def disallows_text?
           message = @expected_message || :not_a_number
           disallows_value_of('abcd', message)
+        end
+
+        def less_than_message
+          @less_than_message ||= :less_than
+          default_error_message(@less_than_message, :count => @option[:equal_to])
+        end
+
+        def greater_than_message
+          @greater_than_message ||= :greater_than
+          default_error_message(@greater_than_message, :count => @option[:greater_than])
+        end
+
+        def greater_than_or_equal_to_message
+          @greater_than_or_equal_to_message ||= :greater_than_or_equal_to
+          default_error_message(@greater_than_or_equal_to_message, :count => @option[:greater_than_or_equal_to])
+        end
+
+        def less_than_or_equal_to_message
+          @less_than_or_equal_to_message ||= :less_than_or_equal_to
+          default_error_message(@less_than_or_equal_to_message, :count => @option[:less_than_or_equal_to])
+        end
+
+        def equal_to_message
+          @equal_to_message ||= :equal_to
+          default_error_message(@equal_to_message, :count => @option[:equal_to])
+        end
+
+        def expected_message
+          @expected_message ||= :not_a_number
+          default_error_message(@expected_message)
         end
       end
     end
