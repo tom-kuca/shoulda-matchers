@@ -16,17 +16,17 @@ module Shoulda # :nodoc:
       #   it { should respond_with(:error)    }
       #   it { should respond_with(501)       }
       def respond_with(status)
-        RespondWithMatcher.new(status)
+        RespondWithMatcher.new(self, status)
       end
 
       class RespondWithMatcher # :nodoc:
 
-        def initialize(status)
+        def initialize(controller, status)
+          @controller = controller
           @status = symbol_to_status_code(status)
         end
 
-        def matches?(controller)
-          @controller = controller
+        def matches?(_)
           correct_status_code? || correct_status_code_range?
         end
 
